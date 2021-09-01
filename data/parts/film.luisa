@@ -1,0 +1,3 @@
+film : RGB {
+  resolution { 1024, 1024 }
+}

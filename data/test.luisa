@@ -1,2 +1,14 @@
-#include "test2.luisa"
+#include "parts/camera.luisa"
 
+Shape shape : TriangleMesh {
+  file { "meshes/cube.obj" }
+}
+
+render {
+  camera { @camera }
+  shapes { @shape }
+  spp { 1024 }
+  integrator : PathTracing {
+    sampler : Halton {}
+  }
+}
