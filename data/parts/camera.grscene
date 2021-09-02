@@ -1,0 +1,5 @@
+Camera camera : Pinhole {
+#include "film.grscene"
+  fov { 35 }
+  f-stop { 1.8 }
+}

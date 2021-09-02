@@ -1,10 +1,14 @@
-#include "parts/camera.luisa"
+#include "parts/camera.grscene"
 
 Shape shape : TriangleMesh {
   file { "meshes/cube.obj" }
+  material : Diffuse {
+    two-sided { true }
+  }
 }
 
 render {
+  // some comment here...
   camera { @camera }
   shapes { @shape }
   spp { 1024 }

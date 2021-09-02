@@ -62,7 +62,7 @@ class SceneParser;
 class SceneNode {
 
 public:
-    using value_tuple = std::tuple<double, std::filesystem::path, const SceneNode *>;
+    using value_tuple = std::tuple<bool, double, std::filesystem::path, const SceneNode *>;
     using value_list_variant = detail::tuple_to_variant_t<detail::tuple_map_t<detail::vector_t, value_tuple>>;
 
 private:

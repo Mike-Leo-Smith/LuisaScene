@@ -16,7 +16,7 @@ namespace gr {
 class SceneNode;
 class SceneParser;
 
-class Scene {
+class SceneGraph {
 
 public:
     struct NodeEqual {
@@ -52,22 +52,26 @@ private:
 
 private:
     friend class SceneParser;
-    explicit Scene(const std::filesystem::path &base_folder) noexcept;
+    explicit SceneGraph(const std::filesystem::path &base_folder) noexcept;
     void _add_global_node(std::unique_ptr<SceneNode> node) noexcept;
     const SceneNode *_global_node(std::string_view name) noexcept;
     void _set_root_node(std::unique_ptr<SceneNode> node) noexcept;
 
 public:
-    ~Scene() noexcept;
-    Scene(Scene &&) noexcept = delete;
-    Scene(const Scene &) noexcept = delete;
-    Scene &operator=(Scene &&) noexcept = delete;
-    Scene &operator=(const Scene &) noexcept = delete;
+    ~SceneGraph() noexcept;
+    SceneGraph(SceneGraph &&) noexcept = delete;
+    SceneGraph(const SceneGraph &) noexcept = delete;
+    SceneGraph &operator=(SceneGraph &&) noexcept = delete;
+    SceneGraph &operator=(const SceneGraph &) noexcept = delete;
     [[nodiscard]] decltype(auto) base_folder() const noexcept { return (_base_folder); }
     [[nodiscard]] auto root() const noexcept { return const_cast<const SceneNode *>(_root_node.get()); }
 
     // for debug
     void print(std::ostream &os) const noexcept;
+
+    // load & dump
+    [[nodiscard]] static std::unique_ptr<SceneGraph> load(const std::filesystem::path &path) noexcept;
+    void dump(const std::filesystem::path &path) const noexcept;
 };
 
 }// namespace gr

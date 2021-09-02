@@ -6,19 +6,21 @@
 #include <string_view>
 
 #include <core/logging.h>
-#include <scene/scene.h>
+#include <scene/scene_graph.h>
 #include <scene/scene_parser.h>
 
 namespace gr {
 
-std::unique_ptr<Scene> SceneParser::parse(const std::filesystem::path &main_file) const noexcept {
+std::unique_ptr<SceneGraph> SceneParser::parse(const std::filesystem::path &main_file) const noexcept {
     _cursor = 0u;
     _source.clear();
-    _scene = std::unique_ptr<Scene>{new Scene{main_file.parent_path()}};
+    _scene = std::unique_ptr<SceneGraph>{new SceneGraph{main_file.parent_path()}};
     _preprocess(FileReader{main_file});
     _parse_main();
-    std::unique_ptr<Scene> scene;
+    std::unique_ptr<SceneGraph> scene;
     _scene.swap(scene);
+    _cursor = 0u;
+    _source.clear();
     return std::move(scene);
 }
 
@@ -30,8 +32,8 @@ void SceneParser::_parse_main() const noexcept {
     _skip_blanks();
     while (!_eof()) {
         auto identifier = _read_identifier();
-        if (identifier == Scene::root_node_name) {// found root node
-            auto node = new SceneNode{std::string{Scene::root_node_name}, ""};
+        if (identifier == SceneGraph::root_node_name) {// found root node
+            auto node = new SceneNode{std::string{SceneGraph::root_node_name}, ""};
             _parse_node_body(*node);
             _scene->_set_root_node(std::unique_ptr<SceneNode>{node});
         } else {
@@ -101,24 +103,35 @@ inline void SceneParser::_skip_blanks() const noexcept {
         while (!_eof() && check()) { _skip(); }
     };
     skip_blanks_exactly();
-    if (!_eof() && _peek() == '!') {
-        _skip();
-        skip_blanks_exactly();
-        using namespace std::string_view_literals;
-        if (auto directive = _read_identifier(); directive == "begin"sv) {
+    if (!_eof()) {
+        if (_peek() == '!') {
+            _skip();
             skip_blanks_exactly();
-            auto path = std::filesystem::path{_read_string()}.parent_path();
-            _path_stack.emplace_back(std::move(path));
-        } else if (directive == "end"sv) {
-            skip_blanks_exactly();
-            static_cast<void>(_read_string());// for performance, we do not check it
-            _path_stack.pop_back();
-        } else {
-            GR_ERROR_WITH_LOCATION(
-                "Unexpected meta-data directive '{}'.",
-                directive);
+            using namespace std::string_view_literals;
+            if (auto directive = _read_identifier(); directive == "begin"sv) {
+                skip_blanks_exactly();
+                auto path = std::filesystem::path{_read_string()}.parent_path();
+                _path_stack.emplace_back(std::move(path));
+            } else if (directive == "end"sv) {
+                skip_blanks_exactly();
+                static_cast<void>(_read_string());// for performance, we do not check it
+                _path_stack.pop_back();
+            } else {
+                GR_ERROR_WITH_LOCATION(
+                    "Unexpected meta-data directive '{}'.",
+                    directive);
+            }
+            _skip_blanks();
+        } else if (_peek() == '/') {
+            _skip();
+            _match('/');
+            auto eol = [this] {
+                auto c = _peek();
+                return c == '\n' || c == '\r';
+            };
+            while (!_eof() && !eol()) { _skip(); }
+            _skip_blanks();
         }
-        _skip_blanks();
     }
 }
 
@@ -222,6 +235,17 @@ inline SceneNode::value_list_variant SceneParser::_parse_value_list() const noex
         }
         _match('}');
         return paths;
+    } else if (c == 't' || c == 'f') {// bools
+        std::vector<bool> bools{_read_bool()};
+        _skip_blanks();
+        while (_peek() == ',') {
+            _skip();
+            _skip_blanks();
+            bools.emplace_back(_read_bool());
+            _skip_blanks();
+        }
+        _match('}');
+        return bools;
     }
     // should be empty list
     _match('}');
@@ -259,6 +283,16 @@ double SceneParser::_read_number() const noexcept {
         return number;
     }
     GR_ERROR_WITH_LOCATION("Failed to parse number.");
+}
+
+bool SceneParser::_read_bool() const noexcept {
+    using namespace std::string_view_literals;
+    if (_peek() == 't') {
+        for (auto x : "true"sv) { _match(x); }
+        return true;
+    }
+    for (auto x : "false"sv) { _match(x); }
+    return false;
 }
 
 }// namespace gr

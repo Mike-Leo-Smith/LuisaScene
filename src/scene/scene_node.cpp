@@ -25,6 +25,9 @@ void SceneNode::_add_property(std::string_view name, SceneNode::value_list_varia
 
 void SceneNode::print(std::ostream &os, size_t indent) const noexcept {
 
+    auto flags = os.flags();
+    os << std::boolalpha;
+
     auto print_indent = [&os](auto indent) noexcept {
         for (auto i = 0u; i < indent; i++) { os << "  "; }
     };
@@ -42,6 +45,7 @@ void SceneNode::print(std::ostream &os, size_t indent) const noexcept {
                 [name = std::string_view{name}, &os, indent](auto &&value_list) {
                     using type = std::remove_cvref_t<decltype(value_list)>;
                     if constexpr (std::disjunction_v<
+                                      std::is_same<type, std::vector<bool>>,
                                       std::is_same<type, std::vector<double>>,
                                       std::is_same<type, std::vector<std::filesystem::path>>>) {
                         os  << " { " << value_list.front();
@@ -66,6 +70,7 @@ void SceneNode::print(std::ostream &os, size_t indent) const noexcept {
         print_indent(indent);
     }
     os << "}\n";
+    os.flags(flags);
 }
 
 std::string_view SceneNode::base_type_identifier() const noexcept {
