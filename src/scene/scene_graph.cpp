@@ -46,6 +46,7 @@ const SceneNode *SceneGraph::_global_node(std::string_view name) noexcept {
 }
 
 void SceneGraph::print(std::ostream &os) const noexcept {
+    // TODO: topologically print...
     for (auto &&node : _global_nodes) {
         os << node->base_type_identifier() << " ";
         node->print(os, 0u);
