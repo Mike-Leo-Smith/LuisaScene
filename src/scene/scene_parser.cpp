@@ -27,7 +27,7 @@ std::unique_ptr<SceneGraph> SceneParser::parse(const std::filesystem::path &main
 void SceneParser::_parse_main() const noexcept {
 
     using namespace std::string_view_literals;
-    GR_INFO("Main file after preprocessing:\n{}", _source);
+    GR_INFO("Main file after preprocessing:\n", _source);
 
     _skip_blanks();
     while (!_eof()) {
@@ -44,7 +44,7 @@ void SceneParser::_parse_main() const noexcept {
             _match(':');
             _skip_blanks();
             auto impl_type = _read_identifier();
-            auto node = new SceneNode{std::string{node_name}, fmt::format("{}:{}", base_type, impl_type)};
+            auto node = new SceneNode{std::string{node_name}, std::string{base_type}.append(impl_type)};
             _parse_node_body(*node);
             _scene->_add_global_node(std::unique_ptr<SceneNode>{node});
         }
@@ -56,11 +56,14 @@ void SceneParser::_preprocess(FileReader file) const noexcept {
     auto path_string = file.path().string();
     auto report_error = [&path_string](auto c, auto expected) noexcept {
         GR_ERROR(
-            "Unexpected character '{}' (expected '{}') "
-            "in preprocess sequence in file '{}'.",
-            c, expected, path_string);
+            "Unexpected character '", c, "' (expected '", expected, "') ",
+            "in preprocess sequence in file '", path_string, "'.");
     };
-    _source.append(fmt::format("!begin \"{}\"\n", path_string));
+    {
+        std::ostringstream oss;
+        oss << "!begin " << file.path() << "\n";
+        _source.append(oss.str());
+    }
     for (auto c = file.get(); c != EOF; c = file.get()) {
         if (c != '#') {
             _source.push_back(c);
@@ -81,8 +84,7 @@ void SceneParser::_preprocess(FileReader file) const noexcept {
                 constexpr auto s = "!@#$%^&*()-_+=|~`{}[];<>,.?/ "sv;
                 if (!isalnum(c) && s.find(c) == std::string_view::npos) [[unlikely]] {
                     GR_ERROR_WITH_LOCATION(
-                        "Unexpected character '{}' in file '{}'.",
-                        c, file.path().string());
+                        "Unexpected character '", c, "' in file ", file.path(), ".");
                 }
                 file_name.push_back(c);
             }
@@ -91,7 +93,10 @@ void SceneParser::_preprocess(FileReader file) const noexcept {
             _preprocess(FileReader{file_path});
         }
     }
-    _source.append(fmt::format("\n!end \"{}\"\n", path_string));
+    std::stringstream oss;
+    oss.clear();
+    oss << "\n!end " << file.path() << "\n";
+    _source.append(oss.str());
 }
 
 inline void SceneParser::_skip_blanks() const noexcept {
@@ -110,7 +115,8 @@ inline void SceneParser::_skip_blanks() const noexcept {
             using namespace std::string_view_literals;
             if (auto directive = _read_identifier(); directive == "begin"sv) {
                 skip_blanks_exactly();
-                auto path = std::filesystem::path{_read_string()}.parent_path();
+                auto s = _read_string();
+                auto path = std::filesystem::canonical(s).parent_path();
                 _path_stack.emplace_back(std::move(path));
             } else if (directive == "end"sv) {
                 skip_blanks_exactly();
@@ -118,8 +124,7 @@ inline void SceneParser::_skip_blanks() const noexcept {
                 _path_stack.pop_back();
             } else {
                 GR_ERROR_WITH_LOCATION(
-                    "Unexpected meta-data directive '{}'.",
-                    directive);
+                    "Unexpected meta-data directive '", directive, "'.");
             }
             _skip_blanks();
         } else if (_peek() == '/') {
@@ -138,8 +143,7 @@ inline void SceneParser::_skip_blanks() const noexcept {
 inline void SceneParser::_match(char c) const noexcept {
     if (auto real_c = _get(); real_c != c) {
         GR_ERROR_WITH_LOCATION(
-            "Unexpected character '{}' (expected {}).",
-            real_c, c);
+            "Unexpected character '", real_c, "' (expected ", c, ").");
     }
 }
 
@@ -263,7 +267,7 @@ void SceneParser::_parse_node_body(SceneNode &node) const noexcept {
             _skip();
             _skip_blanks();
             auto impl_type = _read_identifier();
-            auto inline_node = new SceneNode{{}, fmt::format(":{}", impl_type)};
+            auto inline_node = new SceneNode{{}, std::string{":"}.append(impl_type)};
             _parse_node_body(*inline_node);
             node._inline_nodes.emplace_back(inline_node);
             node._add_property(property_name, std::vector{const_cast<const SceneNode *>(inline_node)});

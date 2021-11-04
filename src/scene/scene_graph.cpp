@@ -20,9 +20,8 @@ void SceneGraph::_add_global_node(std::unique_ptr<SceneNode> node) noexcept {
     auto p_node = node.get();
     if (!_global_nodes.emplace(std::move(node)).second) [[unlikely]] {
         GR_WARNING_WITH_LOCATION(
-            "Global node '{}' is overwritten "
-            "with new definition.",
-            p_node->name());
+            "Global node '", p_node->name(), "' is overwritten ",
+            "with new definition.");
     }
 }
 
@@ -41,8 +40,8 @@ const SceneNode *SceneGraph::_global_node(std::string_view name) noexcept {
         return iter->get();
     }
     GR_ERROR_WITH_LOCATION(
-        "Unresolved reference to global node '{}'.",
-        name);
+        "Unresolved reference to global node '",
+        name, "'.");
 }
 
 void SceneGraph::print(std::ostream &os) const noexcept {

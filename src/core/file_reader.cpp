@@ -48,8 +48,7 @@ FileReader &FileReader::operator=(FileReader &&rhs) noexcept {
 void FileReader::unget() noexcept {
     if (fseek(_handle, -1, SEEK_CUR) != 0) [[unlikely]] {
         GR_ERROR_WITH_LOCATION(
-            "Failed to un-get character from file '{}'.",
-            _path.string());
+            "Failed to un-get character from file ", _path, ".");
     }
 }
 
@@ -57,8 +56,7 @@ size_t FileReader::position() const noexcept {
     fpos_t p;
     if (fgetpos(_handle, &p) != 0) {
         GR_ERROR_WITH_LOCATION(
-            "Failed to get current position in file '{}'.",
-            _path.string());
+            "Failed to get current position in file ", _path, ".");
     }
     return p;
 }
@@ -67,8 +65,7 @@ void FileReader::set_position(size_t p) noexcept {
     if (auto fp = static_cast<fpos_t>(p);
         fsetpos(_handle, &fp) != 0) [[unlikely]] {
         GR_ERROR_WITH_LOCATION(
-            "Failed to set position to {} in file '{}'.",
-            p, _path.string());
+            "Failed to set position to ", p, " in file ", _path, ".");
     }
 }
 

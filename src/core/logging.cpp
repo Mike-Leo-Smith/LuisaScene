@@ -6,9 +6,18 @@
 
 namespace gr {
 
-void log_level_verbose() noexcept { spdlog::set_level(spdlog::level::debug); }
-void log_level_info() noexcept { spdlog::set_level(spdlog::level::info); }
-void log_level_warning() noexcept { spdlog::set_level(spdlog::level::warn); }
-void log_level_error() noexcept { spdlog::set_level(spdlog::level::err); }
+[[nodiscard]] static uint32_t &get_log_level() noexcept {
+    static uint32_t level = detail::LOG_LEVEL_INFO;
+    return level;
+}
+
+namespace detail {
+[[nodiscard]] uint32_t current_log_level() noexcept { return get_log_level(); }
+}
+
+void log_level_verbose() noexcept { get_log_level() = detail::LOG_LEVEL_VERBOSE; }
+void log_level_info() noexcept { get_log_level() = detail::LOG_LEVEL_INFO; }
+void log_level_warning() noexcept { get_log_level() = detail::LOG_LEVEL_WARNING; }
+void log_level_error() noexcept { get_log_level() = detail::LOG_LEVEL_ERROR; }
 
 }// namespace luisa

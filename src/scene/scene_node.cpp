@@ -18,8 +18,7 @@ SceneNode::value_list_variant SceneNode::property(std::string_view name) const n
 void SceneNode::_add_property(std::string_view name, SceneNode::value_list_variant value_list) noexcept {
     if (!_properties.emplace(name, std::move(value_list)).second) {
         GR_WARNING_WITH_LOCATION(
-            "Property '{}' is overwritten.",
-            name);
+            "Property '", name, "' is overwritten.");
     }
 }
 
