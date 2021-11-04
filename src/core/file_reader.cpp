@@ -19,7 +19,7 @@ void FileReader::_close() noexcept {
 
 FileReader::FileReader(const std::filesystem::path &path) noexcept
     : _path{std::filesystem::canonical(path)},
-      _handle{fopen(_path.c_str(), "r")} {}
+      _handle{fopen(_path.string().c_str(), "r")} {}
 
 char FileReader::get() noexcept {
     auto c = fgetc(_handle);
@@ -46,7 +46,7 @@ FileReader &FileReader::operator=(FileReader &&rhs) noexcept {
 }
 
 void FileReader::unget() noexcept {
-    if (fseeko(_handle, -1, SEEK_CUR) != 0) [[unlikely]] {
+    if (fseek(_handle, -1, SEEK_CUR) != 0) [[unlikely]] {
         GR_ERROR_WITH_LOCATION(
             "Failed to un-get character from file '{}'.",
             _path.string());
