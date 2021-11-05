@@ -33,9 +33,9 @@ void SceneParser::_parse_main() const noexcept {
     while (!_eof()) {
         auto identifier = _read_identifier();
         if (identifier == SceneGraph::root_node_name) {// found root node
-            auto node = new SceneNode{std::string{SceneGraph::root_node_name}, ""};
+            auto node = new SceneGraphNode{std::string{SceneGraph::root_node_name}, ""};
             _parse_node_body(*node);
-            _scene->_set_root_node(std::unique_ptr<SceneNode>{node});
+            _scene->_set_root_node(std::unique_ptr<SceneGraphNode>{node});
         } else {
             auto base_type = identifier;
             _skip_blanks();
@@ -44,9 +44,9 @@ void SceneParser::_parse_main() const noexcept {
             _match(':');
             _skip_blanks();
             auto impl_type = _read_identifier();
-            auto node = new SceneNode{std::string{node_name}, std::string{base_type}.append(impl_type)};
+            auto node = new SceneGraphNode{std::string{node_name}, std::string{base_type}.append(impl_type)};
             _parse_node_body(*node);
-            _scene->_add_global_node(std::unique_ptr<SceneNode>{node});
+            _scene->_add_global_node(std::unique_ptr<SceneGraphNode>{node});
         }
         _skip_blanks();
     }
@@ -196,7 +196,7 @@ inline std::string SceneParser::_read_string() const noexcept {
     return s;
 }
 
-inline SceneNode::value_list_variant SceneParser::_parse_value_list() const noexcept {
+inline SceneGraphNode::value_list_variant SceneParser::_parse_value_list() const noexcept {
     _skip_blanks();
     _match('{');
     _skip_blanks();
@@ -213,7 +213,7 @@ inline SceneNode::value_list_variant SceneParser::_parse_value_list() const noex
         return numbers;
     } else if (c == '@') {// references to global nodes
         _skip();
-        std::vector<const SceneNode *> nodes{_scene->_global_node(_read_identifier())};
+        std::vector<const SceneGraphNode *> nodes{_scene->_global_node(_read_identifier())};
         _skip_blanks();
         while (_peek() == ',') {
             _skip();
@@ -256,7 +256,7 @@ inline SceneNode::value_list_variant SceneParser::_parse_value_list() const noex
     return {};
 }
 
-void SceneParser::_parse_node_body(SceneNode &node) const noexcept {
+void SceneParser::_parse_node_body(SceneGraphNode &node) const noexcept {
     _skip_blanks();
     _match('{');
     _skip_blanks();
@@ -267,10 +267,10 @@ void SceneParser::_parse_node_body(SceneNode &node) const noexcept {
             _skip();
             _skip_blanks();
             auto impl_type = _read_identifier();
-            auto inline_node = new SceneNode{{}, std::string{":"}.append(impl_type)};
+            auto inline_node = new SceneGraphNode{{}, std::string{":"}.append(impl_type)};
             _parse_node_body(*inline_node);
             node._inline_nodes.emplace_back(inline_node);
-            node._add_property(property_name, std::vector{const_cast<const SceneNode *>(inline_node)});
+            node._add_property(property_name, std::vector{const_cast<const SceneGraphNode *>(inline_node)});
         } else {// value list
             node._add_property(property_name, _parse_value_list());
         }

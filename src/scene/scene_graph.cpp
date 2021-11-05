@@ -16,7 +16,7 @@ SceneGraph::SceneGraph(const std::filesystem::path &base_folder) noexcept
 
 SceneGraph::~SceneGraph() noexcept = default;
 
-void SceneGraph::_add_global_node(std::unique_ptr<SceneNode> node) noexcept {
+void SceneGraph::_add_global_node(std::unique_ptr<SceneGraphNode> node) noexcept {
     auto p_node = node.get();
     if (!_global_nodes.emplace(std::move(node)).second) [[unlikely]] {
         GR_WARNING_WITH_LOCATION(
@@ -25,7 +25,7 @@ void SceneGraph::_add_global_node(std::unique_ptr<SceneNode> node) noexcept {
     }
 }
 
-void SceneGraph::_set_root_node(std::unique_ptr<SceneNode> node) noexcept {
+void SceneGraph::_set_root_node(std::unique_ptr<SceneGraphNode> node) noexcept {
     if (_root_node != nullptr) [[unlikely]] {
         GR_WARNING_WITH_LOCATION(
             "Root node is overwritten "
@@ -34,7 +34,7 @@ void SceneGraph::_set_root_node(std::unique_ptr<SceneNode> node) noexcept {
     _root_node = std::move(node);
 }
 
-const SceneNode *SceneGraph::_global_node(std::string_view name) noexcept {
+const SceneGraphNode *SceneGraph::_global_node(std::string_view name) noexcept {
     if (auto iter = _global_nodes.find(name);
         iter != _global_nodes.cend()) {
         return iter->get();

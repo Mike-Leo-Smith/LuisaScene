@@ -36,8 +36,8 @@ public:
     [[nodiscard]] double _read_number() const noexcept;
     [[nodiscard]] bool _read_bool() const noexcept;
     void _skip_blanks() const noexcept;
-    void _parse_node_body(SceneNode &node) const noexcept;
-    [[nodiscard]] SceneNode::value_list_variant _parse_value_list() const noexcept;
+    void _parse_node_body(SceneGraphNode &node) const noexcept;
+    [[nodiscard]] SceneGraphNode::value_list_variant _parse_value_list() const noexcept;
 
 public:
     SceneParser() noexcept = default;

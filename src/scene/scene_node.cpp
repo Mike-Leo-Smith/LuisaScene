@@ -7,7 +7,7 @@
 
 namespace gr {
 
-SceneNode::value_list_variant SceneNode::property(std::string_view name) const noexcept {
+SceneGraphNode::value_list_variant SceneGraphNode::property(std::string_view name) const noexcept {
     if (auto iter = _properties.find(name);
         iter != _properties.cend()) {
         return iter->second;
@@ -15,14 +15,14 @@ SceneNode::value_list_variant SceneNode::property(std::string_view name) const n
     return {};
 }
 
-void SceneNode::_add_property(std::string_view name, SceneNode::value_list_variant value_list) noexcept {
+void SceneGraphNode::_add_property(std::string_view name, SceneGraphNode::value_list_variant value_list) noexcept {
     if (!_properties.emplace(name, std::move(value_list)).second) {
         GR_WARNING_WITH_LOCATION(
             "Property '", name, "' is overwritten.");
     }
 }
 
-void SceneNode::print(std::ostream &os, size_t indent) const noexcept {
+void SceneGraphNode::print(std::ostream &os, size_t indent) const noexcept {
 
     auto flags = os.flags();
     os << std::boolalpha;
@@ -52,7 +52,7 @@ void SceneNode::print(std::ostream &os, size_t indent) const noexcept {
                             os << ", " << value_list[i];
                         }
                         os << " }\n";
-                    } else if constexpr (std::is_same_v<type, std::vector<const SceneNode *>>) {
+                    } else if constexpr (std::is_same_v<type, std::vector<const SceneGraphNode *>>) {
                         if (value_list.size() == 1u && !value_list.front()->is_global()) {
                             value_list.front()->print(os, indent + 1u);
                         } else {
@@ -72,7 +72,7 @@ void SceneNode::print(std::ostream &os, size_t indent) const noexcept {
     os.flags(flags);
 }
 
-std::string_view SceneNode::base_type_identifier() const noexcept {
+std::string_view SceneGraphNode::base_type_identifier() const noexcept {
     if (auto p = type_identifier().find(':');
         p != std::string_view::npos) {
         return type_identifier().substr(0u, p);
@@ -80,7 +80,7 @@ std::string_view SceneNode::base_type_identifier() const noexcept {
     return {};
 }
 
-std::string_view SceneNode::impl_type_identifier() const noexcept {
+std::string_view SceneGraphNode::impl_type_identifier() const noexcept {
     if (auto p = type_identifier().find(':');
         p != std::string_view::npos) {
         return type_identifier().substr(p + 1u);

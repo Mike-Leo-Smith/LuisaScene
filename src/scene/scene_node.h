@@ -59,30 +59,30 @@ using tuple_to_variant_t = typename tuple_to_variant<T>::type;
 
 class SceneParser;
 
-class SceneNode {
+class SceneGraphNode {
 
 public:
-    using value_tuple = std::tuple<bool, double, std::filesystem::path, const SceneNode *>;
+    using value_tuple = std::tuple<bool, double, std::filesystem::path, const SceneGraphNode *>;
     using value_list_variant = detail::tuple_to_variant_t<detail::tuple_map_t<detail::vector_t, value_tuple>>;
 
 private:
     std::string _name;
     std::string _type_identifier;
-    std::vector<std::unique_ptr<SceneNode>> _inline_nodes;
+    std::vector<std::unique_ptr<SceneGraphNode>> _inline_nodes;
     std::unordered_map<std::string, value_list_variant, StringHash, std::equal_to<>> _properties;
 
 private:
     friend class SceneParser;
-    SceneNode(std::string name, std::string type) noexcept
+    SceneGraphNode(std::string name, std::string type) noexcept
         : _name{std::move(name)},
           _type_identifier{std::move(type)} {}
     void _add_property(std::string_view name, value_list_variant value_list) noexcept;
 
 public:
-    SceneNode(SceneNode &&) noexcept = delete;
-    SceneNode(const SceneNode &) noexcept = delete;
-    SceneNode &operator=(SceneNode &&) noexcept = delete;
-    SceneNode &operator=(const SceneNode &) noexcept = delete;
+    SceneGraphNode(SceneGraphNode &&) noexcept = delete;
+    SceneGraphNode(const SceneGraphNode &) noexcept = delete;
+    SceneGraphNode &operator=(SceneGraphNode &&) noexcept = delete;
+    SceneGraphNode &operator=(const SceneGraphNode &) noexcept = delete;
     [[nodiscard]] std::string_view name() const noexcept { return _name; }
     [[nodiscard]] std::string_view type_identifier() const noexcept { return _type_identifier; }
     [[nodiscard]] std::string_view base_type_identifier() const noexcept;
