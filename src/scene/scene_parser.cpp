@@ -44,7 +44,7 @@ void SceneParser::_parse_main() const noexcept {
             _match(':');
             _skip_blanks();
             auto impl_type = _read_identifier();
-            auto node = new SceneGraphNode{std::string{node_name}, std::string{base_type}.append(impl_type)};
+            auto node = new SceneGraphNode{std::string{node_name}, std::string{base_type}.append(":").append(impl_type)};
             _parse_node_body(*node);
             _scene->_add_global_node(std::unique_ptr<SceneGraphNode>{node});
         }
