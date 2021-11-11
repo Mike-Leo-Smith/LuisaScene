@@ -89,6 +89,9 @@ public:
     [[nodiscard]] std::string_view impl_type_identifier() const noexcept;
     [[nodiscard]] decltype(auto) properties() const noexcept { return (_properties); }
     [[nodiscard]] value_list_variant property(std::string_view name) const noexcept;
+    // [[nodiscard]] auto string_property(std::string_view name) const noexcept {
+    //     std::get<std::vector<std::string>>(property(name));
+    // }
     [[nodiscard]] auto is_global() const noexcept { return !_name.empty(); }
 
     // for debug

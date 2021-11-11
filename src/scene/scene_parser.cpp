@@ -27,7 +27,7 @@ std::unique_ptr<SceneGraph> SceneParser::parse(const std::filesystem::path &main
 void SceneParser::_parse_main() const noexcept {
 
     using namespace std::string_view_literals;
-    GR_INFO("Main file after preprocessing:\n", _source);
+    // GR_INFO("Main file after preprocessing:\n", _source);
 
     _skip_blanks();
     while (!_eof()) {
