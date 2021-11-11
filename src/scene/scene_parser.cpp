@@ -218,6 +218,8 @@ inline SceneGraphNode::value_list_variant SceneParser::_parse_value_list() const
         while (_peek() == ',') {
             _skip();
             _skip_blanks();
+            _match('@');
+            _skip_blanks();
             nodes.emplace_back(_scene->_global_node(_read_identifier()));
             _skip_blanks();
         }
